@@ -6,9 +6,11 @@
 #define FILE_NAME "students.txt"
 
 typedef struct {
+    char course[50];
     int rollNumber;
     char firstName[50];
-    char course[50];
+    char lastname[50];
+    
 } Student;
 
 // Function to add student data to the file
@@ -20,14 +22,24 @@ void addStudent() {
     }
 
     Student s;
-    printf("Enter Roll Number: ");
-    scanf("%d", &s.rollNumber);
-    printf("Enter First Name: ");
-    scanf("%s", s.firstName);
     printf("Enter Course: ");
     scanf("%s", s.course);
 
-    fprintf(file, "%d %s %s\n", s.rollNumber, s.firstName, s.course);
+    while(1){
+    printf("Enter Roll Number Between (1 - 50): ");
+    scanf("%d", &s.rollNumber);
+    if(s.rollNumber > 0 && s.rollNumber <=50){
+        break;
+    }else{
+        printf("Invilid rollnum \n");
+    }
+    }
+    printf("Enter First Name: ");
+    scanf("%s", s.firstName);
+    printf("Enter Last name: ");
+    scanf("%s", s.lastname);
+
+    fprintf(file, "%s %d %s %s\n",s.course, s.rollNumber, s.firstName,s.lastname);
     fclose(file);
     printf("Student added successfully!\n");
 }
@@ -47,7 +59,7 @@ void findStudentByRollNumber() {
     printf("Enter Roll Number: ");
     scanf("%d", &roll);
 
-    while (fscanf(file, "%d %s %s", &s.rollNumber, s.firstName, s.course) != EOF) {
+    while (fscanf(file, "%s %d %s %s",s.course, &s.rollNumber, s.firstName,s.lastname) != EOF) {
         if (s.rollNumber == roll) {
             printf("Student Found: %s, Course: %s\n", s.firstName, s.course);
             found = 1;
@@ -76,7 +88,7 @@ void findStudentByName() {
     printf("Enter First Name: ");
     scanf("%s", name);
 
-    while (fscanf(file, "%d %s %s", &s.rollNumber, s.firstName, s.course) != EOF) {
+    while (fscanf(file, "%s %d %s %s",s.course, &s.rollNumber, s.firstName,s.lastname) != EOF) {
         if (strcmp(s.firstName, name) == 0) {
             printf("Student Found: Roll No: %d, Course: %s\n", s.rollNumber, s.course);
             found = 1;
@@ -104,7 +116,7 @@ void findStudentsByCourse() {
     printf("Enter Course Name: ");
     scanf("%s", course);
 
-    while (fscanf(file, "%d %s %s", &s.rollNumber, s.firstName, s.course) != EOF) {
+    while (fscanf(file, "%s %d %s %s",s.course, &s.rollNumber, s.firstName, s.lastname) != EOF) {
         if (strcmp(s.course, course) == 0) {
             printf("Student: %s, Roll No: %d\n", s.firstName, s.rollNumber);
             found = 1;
@@ -128,7 +140,7 @@ void countStudents() {
     Student s;
     int count = 0;
 
-    while (fscanf(file, "%d %s %s", &s.rollNumber, s.firstName, s.course) != EOF) {
+    while (fscanf(file, "%s %d %s %s",s.course, &s.rollNumber, s.firstName, s.lastname) != EOF) {
         count++;
     }
 
@@ -152,11 +164,11 @@ void deleteStudent() {
     printf("Enter Roll Number to delete: ");
     scanf("%d", &roll);
 
-    while (fscanf(file, "%d %s %s", &s.rollNumber, s.firstName, s.course) != EOF) {
+    while (fscanf(file, "%s %d %s %s",s.course, &s.rollNumber, s.firstName, s.lastname) != EOF) {
         if (s.rollNumber == roll) {
             found = 1;
         } else {
-            fprintf(tempFile, "%d %s %s\n", s.rollNumber, s.firstName, s.course);
+            fprintf(file, "%s %d %s %s\n",s.course, s.rollNumber, s.firstName,s.lastname);
         }
     }
 
@@ -188,7 +200,7 @@ void updateStudent() {
     printf("Enter Roll Number to update: ");
     scanf("%d", &roll);
 
-    while (fscanf(file, "%d %s %s", &s.rollNumber, s.firstName, s.course) != EOF) {
+    while (fscanf(file, "%s %d %s %s",s.course, &s.rollNumber, s.firstName, s.lastname) != EOF) {
         if (s.rollNumber == roll) {
             printf("Enter New First Name: ");
             scanf("%s", s.firstName);
@@ -196,7 +208,7 @@ void updateStudent() {
             scanf("%s", s.course);
             found = 1;
         }
-        fprintf(tempFile, "%d %s %s\n", s.rollNumber, s.firstName, s.course);
+        fprintf(file, "%s %d %s %s\n",s.course, s.rollNumber, s.firstName,s.lastname);
     }
 
     fclose(file);
