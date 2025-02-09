@@ -109,6 +109,8 @@ void findStudentByRollNumber() {
 }
 
 // Function to find student by name
+
+
 void findStudentByName() {
     FILE *file = fopen(FILE_NAME, "r");
     if (!file) {
@@ -151,6 +153,8 @@ void findStudentByName() {
 
 
 // Function to find students by course
+
+
 void findStudentsByCourse() {
     FILE *file = fopen(FILE_NAME, "r");
     if (!file) {
@@ -179,6 +183,8 @@ void findStudentsByCourse() {
 }
 
 // Function to count students in the file
+
+
 void countStudents() {
     FILE *file = fopen(FILE_NAME, "r");
     if (!file) {
@@ -198,6 +204,8 @@ void countStudents() {
 }
 
 // Function to delete a student by roll number
+
+
 void deleteStudent() {
     FILE *file = fopen(FILE_NAME, "r");
     if (!file) {
@@ -213,6 +221,7 @@ void deleteStudent() {
     scanf("%d", &roll);
 
     // Collect all students with the given roll number
+
     Student s;
     while (fscanf(file, "%s %d %s %s", s.course, &s.rollNumber, s.firstName, s.lastName) != EOF) {
         if (s.rollNumber == roll) {
@@ -242,6 +251,7 @@ void deleteStudent() {
     }
 
     // Rewrite the file excluding the selected student
+    
     file = fopen(FILE_NAME, "r");
     FILE *tempFile = fopen("temp.txt", "w");
 
