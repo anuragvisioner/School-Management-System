@@ -32,7 +32,7 @@ School Management System
 5. Manage Courses
 6. Assign Grades
 7. Exit
-   Enter your choice:
+8. Enter your choice:
 
 
 Enter Roll Number: 101
