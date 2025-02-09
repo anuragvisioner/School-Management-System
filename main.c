@@ -9,13 +9,20 @@ typedef struct {
     char course[50];
     int rollNumber;
     char firstName[50];
-    char lastname[50];
+    char lastName[50];
     
 } Student;
 
+// structure to store search data
+typedef struct {
+    char firstName[50];
+    char course[50];
+    int rollNumber;
+} StudentRecord;
+
 // Function to add student data to the file
 void addStudent() {
-    FILE *file = fopen(FILE_NAME, "a");
+    FILE *file = fopen(FILE_NAME, "a+");
     if (!file) {
         printf("Error opening file!\n");
         return;
@@ -25,26 +32,43 @@ void addStudent() {
     printf("Enter Course: ");
     scanf("%s", s.course);
 
-    while(1){
-    printf("Enter Roll Number Between (1 - 50): ");
-    scanf("%d", &s.rollNumber);
-    if(s.rollNumber > 0 && s.rollNumber <=50){
-        break;
-    }else{
-        printf("Invilid rollnum \n");
+    while (1) {
+        int duplicate = 0;
+        printf("Enter Roll Number Between (1 - 50): ");
+        scanf("%d", &s.rollNumber);
+
+        if (s.rollNumber > 0 && s.rollNumber <= 50) {
+            rewind(file);
+            Student temp;
+            while (fscanf(file, "%s %d %s %s", temp.course, &temp.rollNumber, temp.firstName, temp.lastName) != EOF) {
+                if (strcmp(temp.course, s.course) == 0 && temp.rollNumber == s.rollNumber) {
+                    printf("Roll number already exists in this course. Please enter a different roll number.\n");
+                    duplicate = 1;
+                    break;
+                }
+            }
+            if (!duplicate) {
+                break;
+            }
+        } else {
+            printf("Invalid roll number.\n");
+        }
     }
-    }
+
     printf("Enter First Name: ");
     scanf("%s", s.firstName);
-    printf("Enter Last name: ");
-    scanf("%s", s.lastname);
+    printf("Enter Last Name: ");
+    scanf("%s", s.lastName);
 
-    fprintf(file, "%s %d %s %s\n",s.course, s.rollNumber, s.firstName,s.lastname);
+    fprintf(file, "%s %d %s %s \n", s.course, s.rollNumber, s.firstName, s.lastName);
     fclose(file);
     printf("Student added successfully!\n");
 }
 
+
 // Function to find student by roll number
+
+
 void findStudentByRollNumber() {
     FILE *file = fopen(FILE_NAME, "r");
     if (!file) {
@@ -53,23 +77,34 @@ void findStudentByRollNumber() {
     }
 
     int roll;
-    Student s;
-    int found = 0;
+    StudentRecord students[100]; // Array to store matching student records
+    int count = 0;
 
     printf("Enter Roll Number: ");
     scanf("%d", &roll);
 
-    while (fscanf(file, "%s %d %s %s",s.course, &s.rollNumber, s.firstName,s.lastname) != EOF) {
-        if (s.rollNumber == roll) {
-            printf("Student Found: %s, Course: %s\n", s.firstName, s.course);
-            found = 1;
-            break;
+    char course[50], firstName[50], lastName[50];
+    int rollNumber;
+    
+    while (fscanf(file, "%s %d %s %s", course, &rollNumber, firstName, lastName) != EOF) {
+        if (rollNumber == roll) {
+            if (count < 100) {
+                strcpy(students[count].firstName, firstName);
+                strcpy(students[count].course, course);
+                count++;
+            }
         }
     }
 
     fclose(file);
-    if (!found) {
+
+    if (count == 0) {
         printf("Student not found!\n");
+    } else {
+        printf("Matching Students:\n");
+        for (int i = 0; i < count; i++) {
+            printf("Name: %s, Course: %s\n", students[i].firstName, students[i].course);
+        }
     }
 }
 
@@ -82,24 +117,38 @@ void findStudentByName() {
     }
 
     char name[50];
-    Student s;
-    int found = 0;
+    StudentRecord students[100]; // Array to store matching student records
+    int count = 0;
 
     printf("Enter First Name: ");
     scanf("%s", name);
 
-    while (fscanf(file, "%s %d %s %s",s.course, &s.rollNumber, s.firstName,s.lastname) != EOF) {
-        if (strcmp(s.firstName, name) == 0) {
-            printf("Student Found: Roll No: %d, Course: %s\n", s.rollNumber, s.course);
-            found = 1;
+    char course[50], firstName[50], lastName[50];
+    int rollNumber;
+    
+    while (fscanf(file, "%s %d %s %s", course, &rollNumber, firstName, lastName) != EOF) {
+        if (strcmp(firstName, name) == 0) {
+            if (count < 100) {
+                strcpy(students[count].firstName, firstName);
+                strcpy(students[count].course, course);
+                students[count].rollNumber = rollNumber;
+                count++;
+            }
         }
     }
 
     fclose(file);
-    if (!found) {
+
+    if (count == 0) {
         printf("Student not found!\n");
+    } else {
+        printf("Matching Students:\n");
+        for (int i = 0; i < count; i++) {
+            printf("Roll No: %d, Name: %s, Course: %s\n", students[i].rollNumber, students[i].firstName, students[i].course);
+        }
     }
 }
+
 
 // Function to find students by course
 void findStudentsByCourse() {
@@ -116,7 +165,7 @@ void findStudentsByCourse() {
     printf("Enter Course Name: ");
     scanf("%s", course);
 
-    while (fscanf(file, "%s %d %s %s",s.course, &s.rollNumber, s.firstName, s.lastname) != EOF) {
+    while (fscanf(file, "%s %d %s %s",s.course, &s.rollNumber, s.firstName, s.lastName) != EOF) {
         if (strcmp(s.course, course) == 0) {
             printf("Student: %s, Roll No: %d\n", s.firstName, s.rollNumber);
             found = 1;
@@ -140,7 +189,7 @@ void countStudents() {
     Student s;
     int count = 0;
 
-    while (fscanf(file, "%s %d %s %s",s.course, &s.rollNumber, s.firstName, s.lastname) != EOF) {
+    while (fscanf(file, "%s %d %s %s",s.course, &s.rollNumber, s.firstName, s.lastName) != EOF) {
         count++;
     }
 
@@ -157,18 +206,51 @@ void deleteStudent() {
     }
 
     int roll;
-    Student s;
-    int found = 0;
-    FILE *tempFile = fopen("temp.txt", "w");
+    Student students[50];
+    int count = 0;
 
     printf("Enter Roll Number to delete: ");
     scanf("%d", &roll);
 
-    while (fscanf(file, "%s %d %s %s",s.course, &s.rollNumber, s.firstName, s.lastname) != EOF) {
+    // Collect all students with the given roll number
+    Student s;
+    while (fscanf(file, "%s %d %s %s", s.course, &s.rollNumber, s.firstName, s.lastName) != EOF) {
         if (s.rollNumber == roll) {
-            found = 1;
-        } else {
-            fprintf(file, "%s %d %s %s\n",s.course, s.rollNumber, s.firstName,s.lastname);
+            students[count++] = s;
+        }
+    }
+    fclose(file);
+
+    if (count == 0) {
+        printf("No student found with this roll number.\n");
+        return;
+    }
+
+    int selectedIndex = 0;
+    if (count > 1) {
+        printf("Multiple students found with roll number %d:\n", roll);
+        for (int i = 0; i < count; i++) {
+            printf("%d. %s %s (%s)\n", i + 1, students[i].firstName, students[i].lastName, students[i].course);
+        }
+        printf("Select the student to delete (1-%d): ", count);
+        scanf("%d", &selectedIndex);
+        selectedIndex--; // Convert to 0-based index
+        if (selectedIndex < 0 || selectedIndex >= count) {
+            printf("Invalid selection.\n");
+            return;
+        }
+    }
+
+    // Rewrite the file excluding the selected student
+    file = fopen(FILE_NAME, "r");
+    FILE *tempFile = fopen("temp.txt", "w");
+
+    while (fscanf(file, "%s %d %s %s", s.course, &s.rollNumber, s.firstName, s.lastName) != EOF) {
+        if (!(strcmp(s.course, students[selectedIndex].course) == 0 &&
+              s.rollNumber == students[selectedIndex].rollNumber &&
+              strcmp(s.firstName, students[selectedIndex].firstName) == 0 &&
+              strcmp(s.lastName, students[selectedIndex].lastName) == 0)) {
+            fprintf(tempFile, "%s %d %s %s\n", s.course, s.rollNumber, s.firstName, s.lastName);
         }
     }
 
@@ -177,12 +259,9 @@ void deleteStudent() {
     remove(FILE_NAME);
     rename("temp.txt", FILE_NAME);
 
-    if (found) {
-        printf("Student deleted successfully!\n");
-    } else {
-        printf("Student not found!\n");
-    }
+    printf("Student deleted successfully!\n");
 }
+
 
 // Function to update student details
 void updateStudent() {
@@ -192,36 +271,65 @@ void updateStudent() {
         return;
     }
 
-    int roll;
-    Student s;
-    int found = 0;
+    int roll, count = 0, choice;
+    Student students[100], s;
     FILE *tempFile = fopen("temp.txt", "w");
-
+    
     printf("Enter Roll Number to update: ");
     scanf("%d", &roll);
 
-    while (fscanf(file, "%s %d %s %s",s.course, &s.rollNumber, s.firstName, s.lastname) != EOF) {
+    // Read file and store matching students
+    while (fscanf(file, "%s %d %s %s", s.course, &s.rollNumber, s.firstName, s.lastName) != EOF) {
         if (s.rollNumber == roll) {
-            printf("Enter New First Name: ");
-            scanf("%s", s.firstName);
-            printf("Enter New Course: ");
-            scanf("%s", s.course);
-            found = 1;
+            students[count++] = s;
         }
-        fprintf(file, "%s %d %s %s\n",s.course, s.rollNumber, s.firstName,s.lastname);
+    }
+    fclose(file);
+
+    if (count == 0) {
+        printf("Student not found!\n");
+        fclose(tempFile);
+        remove("temp.txt");
+        return;
     }
 
+    // Display matching students if multiple exist
+    if (count > 1) {
+        printf("Multiple students found with roll number %d:\n", roll);
+        for (int i = 0; i < count; i++) {
+            printf("%d. %s (%s)\n", i + 1, students[i].firstName, students[i].course);
+        }
+        printf("Choose the correct student by number: ");
+        scanf("%d", &choice);
+        choice--;
+    } else {
+        choice = 0;
+    }
+    
+    // Get updated data
+    printf("Enter New First Name: ");
+    scanf("%s", students[choice].firstName);
+    printf("Enter New Course: ");
+    scanf("%s", students[choice].course);
+    
+    // Rewrite file with updated data
+    file = fopen(FILE_NAME, "r");
+    while (fscanf(file, "%s %d %s %s", s.course, &s.rollNumber, s.firstName, s.lastName) != EOF) {
+        if (s.rollNumber == students[choice].rollNumber && strcmp(s.course, students[choice].course) == 0) {
+            fprintf(tempFile, "%s %d %s %s\n", students[choice].course, students[choice].rollNumber, students[choice].firstName, students[choice].lastName);
+        } else {
+            fprintf(tempFile, "%s %d %s %s\n", s.course, s.rollNumber, s.firstName, s.lastName);
+        }
+    }
+    
     fclose(file);
     fclose(tempFile);
     remove(FILE_NAME);
     rename("temp.txt", FILE_NAME);
 
-    if (found) {
-        printf("Student updated successfully!\n");
-    } else {
-        printf("Student not found!\n");
-    }
+    printf("Student updated successfully!\n");
 }
+
 
 int main() {
     int choice;
