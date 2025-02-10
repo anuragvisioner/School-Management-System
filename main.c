@@ -272,7 +272,7 @@ void deleteStudent() {
     printf("Student deleted successfully!\n");
 }
 
-
+// Function to update student details
 // Function to update student details
 void updateStudent() {
     FILE *file = fopen(FILE_NAME, "r");
@@ -281,9 +281,15 @@ void updateStudent() {
         return;
     }
 
-    int roll, count = 0, choice;
     Student students[100], s;
     FILE *tempFile = fopen("temp.txt", "w");
+    if (!tempFile) {
+        printf("Error opening temporary file!\n");
+        fclose(file);
+        return;
+    }
+
+    int roll, count = 0, choice;
     
     printf("Enter Roll Number to update: ");
     scanf("%d", &roll);
@@ -303,35 +309,50 @@ void updateStudent() {
         return;
     }
 
-    // Display matching students if multiple exist
+    // If multiple students found, ask user to choose
     if (count > 1) {
         printf("Multiple students found with roll number %d:\n", roll);
         for (int i = 0; i < count; i++) {
-            printf("%d. %s (%s)\n", i + 1, students[i].firstName, students[i].course);
+            printf("%d. %s %s (%s)\n", i + 1, students[i].firstName, students[i].lastName, students[i].course);
         }
         printf("Choose the correct student by number: ");
         scanf("%d", &choice);
-        choice--;
+        choice--;  // Adjust for 0-based indexing
     } else {
         choice = 0;
     }
-    
+
+    // Store old details before modification
+    int originalRoll = students[choice].rollNumber;
+    char originalCourse[50], originalFirstName[50], originalLastName[50];
+    strcpy(originalCourse, students[choice].course);
+    strcpy(originalFirstName, students[choice].firstName);
+    strcpy(originalLastName, students[choice].lastName);
+
     // Get updated data
     printf("Enter New First Name: ");
     scanf("%s", students[choice].firstName);
+    printf("Enter New Last Name: ");
+    scanf("%s", students[choice].lastName);
     printf("Enter New Course: ");
     scanf("%s", students[choice].course);
-    
-    // Rewrite file with updated data
+
+    // Rewrite file, updating only the selected student
     file = fopen(FILE_NAME, "r");
     while (fscanf(file, "%s %d %s %s", s.course, &s.rollNumber, s.firstName, s.lastName) != EOF) {
-        if (s.rollNumber == students[choice].rollNumber && strcmp(s.course, students[choice].course) == 0) {
+        if (s.rollNumber == originalRoll &&
+            strcmp(s.course, originalCourse) == 0 &&
+            strcmp(s.firstName, originalFirstName) == 0 &&
+            strcmp(s.lastName, originalLastName) == 0) {
+
+            // Write updated details
             fprintf(tempFile, "%s %d %s %s\n", students[choice].course, students[choice].rollNumber, students[choice].firstName, students[choice].lastName);
         } else {
+            // Write original details
             fprintf(tempFile, "%s %d %s %s\n", s.course, s.rollNumber, s.firstName, s.lastName);
         }
     }
-    
+
     fclose(file);
     fclose(tempFile);
     remove(FILE_NAME);
@@ -339,6 +360,8 @@ void updateStudent() {
 
     printf("Student updated successfully!\n");
 }
+
+
 
 
 int main() {
